@@ -42,8 +42,8 @@ public class CountryConfiguration {
 
     private PoolingHttpClientConnectionManager createHttpClientConnectionManager() {
         var poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager();
-        poolingHttpClientConnectionManager.setMaxTotal(100);
-        poolingHttpClientConnectionManager.setDefaultMaxPerRoute(10);
+        poolingHttpClientConnectionManager.setMaxTotal(20);
+        poolingHttpClientConnectionManager.setDefaultMaxPerRoute(2);
 
         return poolingHttpClientConnectionManager;
     }
@@ -53,7 +53,7 @@ public class CountryConfiguration {
                 .addInterceptorFirst(new HttpComponentsMessageSender.RemoveSoapHeadersInterceptor())
                 .setConnectionManager(poolingHttpClientConnectionManager)
                 .evictExpiredConnections()
-                .evictIdleConnections(60, TimeUnit.SECONDS)
+                .evictIdleConnections(40, TimeUnit.SECONDS)
                 .build();
     }
 }
