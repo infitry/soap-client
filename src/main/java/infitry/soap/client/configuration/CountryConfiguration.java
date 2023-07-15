@@ -1,10 +1,15 @@
 package infitry.soap.client.configuration;
 
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.ws.client.core.WebServiceTemplate;
 import org.springframework.ws.transport.http.HttpComponentsMessageSender;
+
+import java.util.concurrent.TimeUnit;
 
 @Configuration
 public class CountryConfiguration {
@@ -30,8 +35,25 @@ public class CountryConfiguration {
         var httpComponentsMessageSender = new HttpComponentsMessageSender();
         httpComponentsMessageSender.setConnectionTimeout(10000);
         httpComponentsMessageSender.setReadTimeout(60000);
-        httpComponentsMessageSender.setAcceptGzipEncoding(true);
-        httpComponentsMessageSender.setMaxTotalConnections(10);
+        httpComponentsMessageSender.setHttpClient(createHttpClient(createHttpClientConnectionManager()));
+
         return httpComponentsMessageSender;
+    }
+
+    private PoolingHttpClientConnectionManager createHttpClientConnectionManager() {
+        var poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager();
+        poolingHttpClientConnectionManager.setMaxTotal(100);
+        poolingHttpClientConnectionManager.setDefaultMaxPerRoute(10);
+
+        return poolingHttpClientConnectionManager;
+    }
+
+    private CloseableHttpClient createHttpClient(PoolingHttpClientConnectionManager poolingHttpClientConnectionManager) {
+        return HttpClients.custom()
+                .addInterceptorFirst(new HttpComponentsMessageSender.RemoveSoapHeadersInterceptor())
+                .setConnectionManager(poolingHttpClientConnectionManager)
+                .evictExpiredConnections()
+                .evictIdleConnections(20000, TimeUnit.MILLISECONDS)
+                .build();
     }
 }
