@@ -53,7 +53,7 @@ public class CountryConfiguration {
                 .addInterceptorFirst(new HttpComponentsMessageSender.RemoveSoapHeadersInterceptor())
                 .setConnectionManager(poolingHttpClientConnectionManager)
                 .evictExpiredConnections()
-                .evictIdleConnections(20000, TimeUnit.MILLISECONDS)
+                .evictIdleConnections(60, TimeUnit.SECONDS)
                 .build();
     }
 }
